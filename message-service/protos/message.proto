@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+option go_package = "./genproto/messagepb";
+
+service MessageService{
+    rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse){}
+    rpc UpdateMessage(UpdateMessageRequest) returns (UpdateMessageResponse){}
+    rpc DeleteMessage(DeleteMessageRequest) returns (DeleteMessageResponse){}
+    rpc GetMessagesByTo(GetMessagesByToRequest) returns (GetMessagesByToResponse){}
+}
+
+message Message{
+    string id = 1;
+    string to = 2;
+    string message = 3;
+    string created_at = 4;
+    string updated_at = 5;
+    int64 deleted_at = 6;
+}
+
+// REVIEW Create
+message CreateMessageRequest{
+    string user_id = 1;
+    string to = 2;
+    string message = 3;
+}
+message CreateMessageResponse{
+    bool status = 1;
+    string message_resp = 2;
+}
+
+// REVIEW update
+message UpdateMessageRequest{
+    string user_id = 1;
+    string message_id = 2;
+    string message = 3;
+}
+
+message UpdateMessageResponse{
+    bool status = 1;
+    string message_resp = 2;
+}
+
+
+// REVIEW Delete
+message DeleteMessageRequest{
+    string user_id = 1;
+    string message_id = 2;
+}
+
+message DeleteMessageResponse{
+    bool status = 1;
+    string message_resp = 2;
+}
+
+// REVIEW GetMessageByTo
+message GetMessagesByToRequest{
+    string user_id = 1;
+    string to = 2;
+}
+
+message GetMessagesByToResponse{
+    bool status = 1;
+    string message_resp = 2;
+    repeated Message messages = 3;
+}

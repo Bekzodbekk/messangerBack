@@ -1,0 +1,11 @@
+server:
+  host: localhost
+  port: 9000
+
+user_service:
+  host: localhost
+  port: 8001
+
+message_service:
+  host: localhost,
+  port: 8002

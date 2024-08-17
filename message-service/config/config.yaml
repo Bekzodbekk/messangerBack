@@ -1,0 +1,9 @@
+server:
+  host: localhost
+  port: 8002
+
+mongosh:
+  user: Bek10022006
+  password: Bek10022006
+  database: userDB
+  collection: users
