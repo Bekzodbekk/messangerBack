@@ -136,3 +136,17 @@ func (h *HandlerST) GetUsers(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, resp)
 }
+func (h *HandlerST) GetAllDirects(ctx *gin.Context) {
+	user_id := ctx.Query("user_id")
+
+	req := &userpb.GetAllDirectsRequest{
+		Id: user_id,
+	}
+	resp, err := h.service.GetAllDirects(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}

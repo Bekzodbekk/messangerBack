@@ -14,6 +14,16 @@ service UserService{
     rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse) {}
     rpc GetUserByFilter(GetUserByFilterRequest) returns (GetUserByFilterResponse) {}
     rpc GetUsers(Void) returns (GetUsersResponse) {}
+    rpc GetAllDirects(GetAllDirectsRequest) returns (GetAllDirectsResponse){}
+}
+
+message GetAllDirectsResponse{
+    bool status = 1;
+    int64 directs_count = 2;
+    repeated User directs = 3;
+}
+message GetAllDirectsRequest{
+    string id = 1;
 }
 
 message User{

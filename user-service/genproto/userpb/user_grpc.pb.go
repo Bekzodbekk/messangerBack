@@ -28,6 +28,7 @@ const (
 	UserService_GetUserById_FullMethodName     = "/UserService/GetUserById"
 	UserService_GetUserByFilter_FullMethodName = "/UserService/GetUserByFilter"
 	UserService_GetUsers_FullMethodName        = "/UserService/GetUsers"
+	UserService_GetAllDirects_FullMethodName   = "/UserService/GetAllDirects"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -43,6 +44,7 @@ type UserServiceClient interface {
 	GetUserById(ctx context.Context, in *GetUserByIdRequest, opts ...grpc.CallOption) (*GetUserByIdResponse, error)
 	GetUserByFilter(ctx context.Context, in *GetUserByFilterRequest, opts ...grpc.CallOption) (*GetUserByFilterResponse, error)
 	GetUsers(ctx context.Context, in *Void, opts ...grpc.CallOption) (*GetUsersResponse, error)
+	GetAllDirects(ctx context.Context, in *GetAllDirectsRequest, opts ...grpc.CallOption) (*GetAllDirectsResponse, error)
 }
 
 type userServiceClient struct {
@@ -143,6 +145,16 @@ func (c *userServiceClient) GetUsers(ctx context.Context, in *Void, opts ...grpc
 	return out, nil
 }
 
+func (c *userServiceClient) GetAllDirects(ctx context.Context, in *GetAllDirectsRequest, opts ...grpc.CallOption) (*GetAllDirectsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAllDirectsResponse)
+	err := c.cc.Invoke(ctx, UserService_GetAllDirects_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -156,6 +168,7 @@ type UserServiceServer interface {
 	GetUserById(context.Context, *GetUserByIdRequest) (*GetUserByIdResponse, error)
 	GetUserByFilter(context.Context, *GetUserByFilterRequest) (*GetUserByFilterResponse, error)
 	GetUsers(context.Context, *Void) (*GetUsersResponse, error)
+	GetAllDirects(context.Context, *GetAllDirectsRequest) (*GetAllDirectsResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -189,6 +202,9 @@ func (UnimplementedUserServiceServer) GetUserByFilter(context.Context, *GetUserB
 }
 func (UnimplementedUserServiceServer) GetUsers(context.Context, *Void) (*GetUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
+}
+func (UnimplementedUserServiceServer) GetAllDirects(context.Context, *GetAllDirectsRequest) (*GetAllDirectsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllDirects not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -365,6 +381,24 @@ func _UserService_GetUsers_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetAllDirects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllDirectsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetAllDirects(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetAllDirects_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetAllDirects(ctx, req.(*GetAllDirectsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -407,6 +441,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUsers",
 			Handler:    _UserService_GetUsers_Handler,
+		},
+		{
+			MethodName: "GetAllDirects",
+			Handler:    _UserService_GetAllDirects_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

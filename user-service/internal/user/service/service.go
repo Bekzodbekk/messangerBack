@@ -44,3 +44,6 @@ func (s *Service) GetUserByFilter(ctx context.Context, req *userpb.GetUserByFilt
 func (s *Service) GetUsers(ctx context.Context, req *userpb.Void) (*userpb.GetUsersResponse, error) {
 	return s.userRepo.GetUsers(ctx, req)
 }
+func (s *Service) GetAllDirects(ctx context.Context, req *userpb.GetAllDirectsRequest) (*userpb.GetAllDirectsResponse, error) {
+	return s.userRepo.GetAllDirects(ctx, req)
+}

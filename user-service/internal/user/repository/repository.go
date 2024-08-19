@@ -16,4 +16,5 @@ type Repository interface {
 	GetUserById(ctx context.Context, req *userpb.GetUserByIdRequest) (*userpb.GetUserByIdResponse, error)
 	GetUserByFilter(ctx context.Context, req *userpb.GetUserByFilterRequest) (*userpb.GetUserByFilterResponse, error)
 	GetUsers(ctx context.Context, req *userpb.Void) (*userpb.GetUsersResponse, error)
+	GetAllDirects(ctx context.Context, req *userpb.GetAllDirectsRequest) (*userpb.GetAllDirectsResponse, error)
 }

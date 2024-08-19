@@ -46,6 +46,9 @@ func (c *ServiceRepositoryClient) GetUserByFilter(ctx context.Context, req *user
 func (c *ServiceRepositoryClient) GetUsers(ctx context.Context, req *userpb.Void) (*userpb.GetUsersResponse, error) {
 	return c.UserClient.GetUsers(ctx, req)
 }
+func (c *ServiceRepositoryClient) GetAllDirects(ctx context.Context, req *userpb.GetAllDirectsRequest) (*userpb.GetAllDirectsResponse, error) {
+	return c.UserClient.GetAllDirects(ctx, req)
+}
 
 // FIXME MESSAGE-SERVICE
 func (c *ServiceRepositoryClient) CreateMessage(ctx context.Context, req *messagepb.CreateMessageRequest) (*messagepb.CreateMessageResponse, error) {

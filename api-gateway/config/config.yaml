@@ -7,5 +7,5 @@ user_service:
   port: 8001
 
 message_service:
-  host: localhost,
+  host: localhost
   port: 8002

@@ -184,7 +184,6 @@ func (u *UserRepo) CreateUser(ctx context.Context, req *userpb.CreateUserRequest
 		},
 	}, nil
 }
-
 func (u *UserRepo) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest) (*userpb.UpdateUserResponse, error) {
 	objID, err := primitive.ObjectIDFromHex(req.Id)
 	if err != nil {
@@ -229,7 +228,6 @@ func (u *UserRepo) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest
 		User: updatedUser.User,
 	}, nil
 }
-
 func (u *UserRepo) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequest) (*userpb.DeleteUserResponse, error) {
 	objID, err := primitive.ObjectIDFromHex(req.Id)
 	if err != nil {
@@ -264,7 +262,6 @@ func (u *UserRepo) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequest
 		},
 	}, nil
 }
-
 func (u *UserRepo) GetUserById(ctx context.Context, req *userpb.GetUserByIdRequest) (*userpb.GetUserByIdResponse, error) {
 	objID, err := primitive.ObjectIDFromHex(req.Id)
 	if err != nil {
@@ -305,7 +302,6 @@ func (u *UserRepo) GetUserById(ctx context.Context, req *userpb.GetUserByIdReque
 		},
 	}, nil
 }
-
 func (u *UserRepo) GetUserByFilter(ctx context.Context, req *userpb.GetUserByFilterRequest) (*userpb.GetUserByFilterResponse, error) {
 	filter := bson.M{}
 	if req.FirstName != "" {
@@ -356,7 +352,6 @@ func (u *UserRepo) GetUserByFilter(ctx context.Context, req *userpb.GetUserByFil
 		Users: users,
 	}, nil
 }
-
 func (u *UserRepo) GetUsers(ctx context.Context, req *userpb.Void) (*userpb.GetUsersResponse, error) {
 	filter := bson.M{"deleted_at": 0}
 	cursor, err := u.coll.Find(ctx, filter)
@@ -391,6 +386,73 @@ func (u *UserRepo) GetUsers(ctx context.Context, req *userpb.Void) (*userpb.GetU
 			Message: "Successfully retrieved all users!",
 		},
 		User: users,
+	}, nil
+}
+func (u *UserRepo) GetAllDirects(ctx context.Context, req *userpb.GetAllDirectsRequest) (*userpb.GetAllDirectsResponse, error) {
+	userID, err := primitive.ObjectIDFromHex(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Messages []struct {
+			ID      primitive.ObjectID `bson:"_id,omitempty"`
+			To      string             `bson:"to" json:"to"`
+			Message string             `bson:"message" json:"message"`
+		} `bson:"messages"`
+	}
+
+	filter := bson.M{"_id": userID}
+	err = u.coll.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []*userpb.User
+	for _, message := range result.Messages {
+		var user User
+		userIdFromTo, err := primitive.ObjectIDFromHex(message.To)
+		if err != nil {
+			return nil, err
+		}
+
+		filter := bson.M{"_id": userIdFromTo}
+		err = u.coll.FindOne(ctx, filter).Decode(&user)
+		if err != nil {
+			return nil, err
+		}
+
+		// Check if the user already exists in the users slice
+		exists := false
+		for _, existingUser := range users {
+			if existingUser.Id == user.Id.Hex() {
+				exists = true
+				break
+			}
+		}
+
+		// If the user doesn't exist, add to the users slice
+		if !exists {
+			users = append(users, &userpb.User{
+				Id:        user.Id.Hex(),
+				FirstName: user.FirstName,
+				LastName:  user.LastName,
+				Email:     user.Email,
+				Username:  user.Username,
+				Password:  user.Password,
+				UserInfoCud: &userpb.UserInfoCUD{
+					CreatedAt: user.CreatedAt,
+					UpdatedAt: user.UpdatedAt,
+					DeletedAt: user.DeletedAt,
+				},
+			})
+		}
+	}
+
+	return &userpb.GetAllDirectsResponse{
+		Status:       true,
+		DirectsCount: int64(len(users)),
+		Directs:      users,
 	}, nil
 }
 
