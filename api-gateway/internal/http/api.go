@@ -3,7 +3,6 @@ package http
 import (
 	"api-gateway/internal/http/handlers"
 	"api-gateway/internal/service"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -12,14 +11,7 @@ import (
 func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
 	r := gin.Default()
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://messangervue.netlify.app/"},                         // Ruxsat berilgan domennar
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},                   // Ruxsat berilgan metodlar
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"}, // Ruxsat berilgan headerlar
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           24 * time.Hour, // CORS qoidalarini cache qilish vaqti
-	}))
+	r.Use(cors.Default())
 
 	hnd := handlers.NewHandlerSt(cli)
 	r.POST("/auth/register", hnd.Register)
