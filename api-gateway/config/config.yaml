@@ -1,11 +1,11 @@
 server:
-  host: localhost
+  host: api_gateway
   port: 9000
 
 user_service:
-  host: localhost
+  host: user_service
   port: 8001
 
 message_service:
-  host: localhost
+  host: message_service
   port: 8002

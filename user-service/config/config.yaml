@@ -1,13 +1,15 @@
 server:
-  host: localhost
+  host: user_service
   port: 8001
 
 mongosh:
-  user: Bek10022006
-  password: Bek10022006
+  host: mongodb
+  port: 27017
   database: userDB
   collection: users
+  # user: Bek10022006
+  # password: Bek10022006
 
 redis:
-  host: localhost
+  host: redis
   port: 6379

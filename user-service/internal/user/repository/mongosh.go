@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 	"user-service/genproto/userpb"
 
@@ -11,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/exp/rand"
+	"gopkg.in/gomail.v2"
 )
 
 type UserRepo struct {
@@ -26,8 +28,8 @@ type User struct {
 	Username  string             `bson:"username"`
 	Password  string             `bson:"password"`
 	Messages  bson.A             `bson:"messages"`
-	CreatedAt string             `bson:"created_at"`
-	UpdatedAt string             `bson:"updated_at"`
+	CreatedAt int64              `bson:"created_at"`
+	UpdatedAt int64              `bson:"updated_at"`
 	DeletedAt int64              `bson:"deleted_at"`
 }
 
@@ -43,6 +45,7 @@ func (u *UserRepo) Register(ctx context.Context, req *userpb.CreateUserRequest) 
 	if err != nil {
 		return nil, err
 	}
+	expiredKeyPassword := GenerateExpiredPassword()
 
 	userData := map[string]interface{}{
 		"first_name":      req.FirstName,
@@ -50,7 +53,7 @@ func (u *UserRepo) Register(ctx context.Context, req *userpb.CreateUserRequest) 
 		"email":           req.Email,
 		"username":        req.Username,
 		"password":        string(passwordHash),
-		"expiredPassword": GenerateExpiredPassword(),
+		"expiredPassword": expiredKeyPassword,
 	}
 
 	err = u.rdb.HSet(ctx, req.Email, userData).Err()
@@ -58,6 +61,10 @@ func (u *UserRepo) Register(ctx context.Context, req *userpb.CreateUserRequest) 
 		return nil, err
 	}
 	err = u.rdb.Expire(ctx, req.Email, 60*time.Second).Err()
+	if err != nil {
+		return nil, err
+	}
+	err = SendEmail(req.Email, expiredKeyPassword)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +157,9 @@ func (u *UserRepo) Login(ctx context.Context, req *userpb.SignInRequest) (*userp
 }
 
 func (u *UserRepo) CreateUser(ctx context.Context, req *userpb.CreateUserRequest) (*userpb.CreateUserResponse, error) {
+	createdAt := int64(time.Now().Unix())
+	updatedAt := int64(time.Now().Unix())
+
 	query := bson.M{
 		"first_name": req.FirstName,
 		"last_name":  req.LastName,
@@ -157,14 +167,16 @@ func (u *UserRepo) CreateUser(ctx context.Context, req *userpb.CreateUserRequest
 		"username":   req.Username,
 		"password":   req.Password,
 		"messages":   bson.A{},
-		"created_at": time.Now().String(),
-		"updated_at": time.Now().String(),
-		"deleted_at": 0,
+		"created_at": createdAt,
+		"updated_at": updatedAt,
+		"deleted_at": int64(0),
 	}
+
 	result, err := u.coll.InsertOne(ctx, query)
 	if err != nil {
 		return nil, err
 	}
+
 	return &userpb.CreateUserResponse{
 		RespInfo: &userpb.ResponseInfo{
 			Status:  true,
@@ -177,12 +189,13 @@ func (u *UserRepo) CreateUser(ctx context.Context, req *userpb.CreateUserRequest
 			Email:     req.Email,
 			Username:  req.Username,
 			UserInfoCud: &userpb.UserInfoCUD{
-				CreatedAt: query["created_at"].(string),
-				UpdatedAt: query["updated_at"].(string),
-				DeletedAt: int64(query["deleted_at"].(int)),
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+				DeletedAt: query["deleted_at"].(int64),
 			},
 		},
 	}, nil
+
 }
 func (u *UserRepo) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest) (*userpb.UpdateUserResponse, error) {
 	objID, err := primitive.ObjectIDFromHex(req.Id)
@@ -197,7 +210,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest
 			"last_name":  req.LastName,
 			"email":      req.Email,
 			"username":   req.Username,
-			"updated_at": time.Now().String(),
+			"updated_at": time.Now().Unix(),
 		},
 	}
 
@@ -454,6 +467,83 @@ func (u *UserRepo) GetAllDirects(ctx context.Context, req *userpb.GetAllDirectsR
 		DirectsCount: int64(len(users)),
 		Directs:      users,
 	}, nil
+}
+
+func SendEmail(to string, code int) error {
+	subject := "----Welcome buddy----"
+
+	body := fmt.Sprintf(`
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<style>
+				.container {
+					font-family: Arial, sans-serif;
+					background-color: #f4f4f4;
+					padding: 20px;
+					border-radius: 10px;
+					width: 80%%;
+					margin: 0 auto;
+					color: #333;
+				}
+				.header {
+					background-color: #4CAF50;
+					color: white;
+					padding: 10px;
+					border-radius: 10px 10px 0 0;
+					text-align: center;
+				}
+				.content {
+					padding: 20px;
+					background-color: white;
+					border-radius: 0 0 10px 10px;
+				}
+				.code {
+					font-size: 24px;
+					font-weight: bold;
+					color: #4CAF50;
+					text-align: center;
+					margin: 20px 0;
+				}
+				.footer {
+					text-align: center;
+					padding: 10px;
+					font-size: 12px;
+					color: #777;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="container">
+				<div class="header">
+					<h1>Welcome to Our Service!</h1>
+				</div>
+				<div class="content">
+					<p>Dear user,</p>
+					<p>Thank you for signing up. To complete your registration, please use the following confirmation code:</p>
+					<div class="code">%d</div>
+					<p>If you didn't sign up, please ignore this email.</p>
+				</div>
+				<div class="footer">
+					<p>This is an automated message, please do not reply.</p>
+				</div>
+			</div>
+		</body>
+		</html>
+	`, code)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", "bekzodnematov709@gmail.com")
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	d := gomail.NewDialer("smtp.gmail.com", 587, "bekzodnematov709@gmail.com", "mgkr nogt rbrk qojt")
+
+	if err := d.DialAndSend(m); err != nil {
+		return err
+	}
+	return nil
 }
 
 func GenerateExpiredPassword() int {

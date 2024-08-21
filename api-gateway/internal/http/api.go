@@ -36,6 +36,8 @@ func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
 	r.POST("/message", hnd.CreateMessage)
 	r.PUT("/message/:id")
 	r.DELETE("/message")
-	r.GET("/message")
+	r.GET("/message", hnd.GetMessagesByTo)
+
+	r.GET("/ws", hnd.WsHandler)
 	return r
 }

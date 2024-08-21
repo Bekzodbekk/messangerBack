@@ -17,10 +17,11 @@ type MongoshConn struct {
 func InitDB(conf *config.Config) (*MongoshConn, error) {
 	ctx := context.Background()
 
-	uri := fmt.Sprintf("mongodb+srv://%s:%s@fornt.otm6nho.mongodb.net/?retryWrites=true&w=majority&appName=Fornt",
-		conf.Mongosh.MongoUser,
-		conf.Mongosh.MongoPassword,
-	)
+	uri := fmt.Sprintf("mongodb://%s:%d", conf.Mongosh.MongoHost, conf.Mongosh.MongoPort)
+	// uri := fmt.Sprintf("mongodb+srv://%s:%s@fornt.otm6nho.mongodb.net/?retryWrites=true&w=majority&appName=Fornt",
+	// 	conf.Mongosh.MongoUser,
+	// 	conf.Mongosh.MongoPassword,
+	// )
 	cli, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, err

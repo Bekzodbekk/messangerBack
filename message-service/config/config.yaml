@@ -1,9 +1,11 @@
 server:
-  host: localhost
+  host: message_service
   port: 8002
 
 mongosh:
-  user: Bek10022006
-  password: Bek10022006
+  host: mongodb
+  port: 27017
   database: userDB
   collection: users
+  # user: Bek10022006
+  # password: Bek10022006

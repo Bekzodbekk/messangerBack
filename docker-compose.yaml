@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  redis:
+    container_name: redis_container
+    image: redis:latest
+    ports:
+      - "6380:6379"
+    networks:
+      - mynetwork
+
+  mongodb:
+    container_name: mongo_container
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - mynetwork
+
+  user_service:
+    build: ./user-service
+    container_name: user_service_container
+    image: user_service_image
+    ports:
+      - "8001:8001"
+    depends_on:
+      -  mongodb
+      -  redis
+    networks:
+      - mynetwork
+
+  message_service:
+    build: ./message-service
+    container_name: message_service_container
+    image: message_service_image
+    ports:
+      - "8002:8002"
+    depends_on:
+      - mongodb
+    networks:
+      - mynetwork
+
+  api_gateway:
+    build: ./api-gateway  
+    container_name: api_gateway_container
+    image: api_gateway_image  
+    ports:
+      - "9000:9000"
+    depends_on:
+      - user_service
+      - message_service
+      - redis
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  db-data1:

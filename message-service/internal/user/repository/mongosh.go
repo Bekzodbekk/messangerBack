@@ -25,9 +25,9 @@ type Message struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	To        string             `bson:"to"`
 	Message   string             `bson:"message"`
-	CreatedAt time.Time          `bson:"created_at"`
-	UpdatedAt time.Time          `bson:"updated_at"`
-	DeletedAt *time.Time         `bson:"deleted_at,omitempty"`
+	CreatedAt int64              `bson:"created_at"`
+	UpdatedAt int64              `bson:"updated_at"`
+	DeletedAt int64              `bson:"deleted_at,omitempty"`
 }
 
 func NewMessageRepo(mongoConn *mongo.Collection) Repository {
@@ -46,8 +46,8 @@ func (r *MessageRepo) CreateMessage(ctx context.Context, req *messagepb.CreateMe
 		ID:        primitive.NewObjectID(),
 		To:        req.To,
 		Message:   req.Message,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().Unix(),
+		UpdatedAt: time.Now().Unix(),
 	}
 
 	filter := bson.M{"_id": userID}
@@ -82,7 +82,7 @@ func (r *MessageRepo) UpdateMessage(ctx context.Context, req *messagepb.UpdateMe
 	update := bson.M{
 		"$set": bson.M{
 			"messages.$.message":    req.Message,
-			"messages.$.updated_at": time.Now(),
+			"messages.$.updated_at": time.Now().Unix(),
 		},
 	}
 
@@ -118,7 +118,7 @@ func (r *MessageRepo) DeleteMessage(ctx context.Context, req *messagepb.DeleteMe
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"messages.$.deleted_at": time.Now(),
+			"messages.$.deleted_at": time.Now().Unix(),
 		},
 	}
 
@@ -153,20 +153,24 @@ func (r *MessageRepo) GetMessagesByTo(ctx context.Context, req *messagepb.GetMes
 	err = r.coll.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, status.Error(codes.NotFound, "No messages found")
+			return &messagepb.GetMessagesByToResponse{
+				Status:      true,
+				MessageResp: "Message is empty",
+				Messages:    nil,
+			}, nil
 		}
 		return nil, status.Errorf(codes.Internal, "Failed to retrieve messages: %v", err)
 	}
 
 	var messages []*messagepb.Message
 	for _, msg := range user.Messages {
-		if msg.To == req.To && msg.DeletedAt == nil {
+		if msg.To == req.To && msg.DeletedAt == 0 {
 			messages = append(messages, &messagepb.Message{
 				Id:        msg.ID.Hex(),
 				To:        msg.To,
 				Message:   msg.Message,
-				CreatedAt: msg.CreatedAt.Format(time.RFC3339),
-				UpdatedAt: msg.UpdatedAt.Format(time.RFC3339),
+				CreatedAt: msg.CreatedAt,
+				UpdatedAt: msg.UpdatedAt,
 			})
 		}
 	}

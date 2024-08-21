@@ -3,8 +3,8 @@ package load
 import "github.com/spf13/viper"
 
 type Mongosh struct {
-	MongoUser       string
-	MongoPassword   string
+	MongoHost       string
+	MongoPort       int
 	MongoDatabase   string
 	MongoCollection string
 }
@@ -34,8 +34,8 @@ func LOAD(path string) (*Config, error) {
 
 	conf := Config{
 		Mongosh: Mongosh{
-			MongoUser:       viper.GetString("mongosh.user"),
-			MongoPassword:   viper.GetString("mongosh.password"),
+			MongoHost:       viper.GetString("mongosh.host"),
+			MongoPort:       viper.GetInt("mongosh.port"),
 			MongoDatabase:   viper.GetString("mongosh.database"),
 			MongoCollection: viper.GetString("mongosh.collection"),
 		},
