@@ -13,7 +13,7 @@ func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},                                     // Ruxsat berilgan domennar
+		AllowOrigins:     []string{"https://messangervue.netlify.app/"},                         // Ruxsat berilgan domennar
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},                   // Ruxsat berilgan metodlar
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"}, // Ruxsat berilgan headerlar
 		ExposeHeaders:    []string{"Content-Length"},
