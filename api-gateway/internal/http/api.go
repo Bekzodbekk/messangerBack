@@ -3,7 +3,6 @@ package http
 import (
 	"api-gateway/internal/http/handlers"
 	"api-gateway/internal/service"
-	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,6 @@ func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-	r.Use(RedirectHTTPSMiddleware())
 
 	hnd := handlers.NewHandlerSt(cli)
 	r.POST("/auth/register", hnd.Register)
@@ -40,14 +38,4 @@ func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
 
 	r.GET("/ws", hnd.WsHandler)
 	return r
-}
-
-func RedirectHTTPSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if c.Request.Header.Get("X-Forwarded-Proto") != "https" {
-			c.Redirect(http.StatusMovedPermanently, "https://"+c.Request.Host+c.Request.RequestURI)
-			return
-		}
-		c.Next()
-	}
 }
