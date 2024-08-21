@@ -11,13 +11,13 @@ import (
 func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
 	r := gin.Default()
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://messangervue.netlify.app"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"content-type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-	}))
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowCredentials = true
+	corsConfig.AllowHeaders = []string{"*"}
+	corsConfig.AllowBrowserExtensions = true
+	corsConfig.AllowMethods = []string{"*"}
+	r.Use(cors.New(corsConfig))
 
 	hnd := handlers.NewHandlerSt(cli)
 	r.POST("/auth/register", hnd.Register)
