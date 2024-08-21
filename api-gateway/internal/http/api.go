@@ -20,7 +20,7 @@ func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
 	r.Use(cors.New(corsConfig))
 
 	hnd := handlers.NewHandlerSt(cli)
-	r.POST("/auth/register", hnd.Register)
+	r.POST("https://3.75.194.236:9000/auth/register", hnd.Register)
 	r.POST("/auth/verify", hnd.Verify)
 	r.POST("/auth/login", hnd.SignIn)
 
