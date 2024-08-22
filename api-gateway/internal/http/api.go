@@ -6,6 +6,9 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
@@ -19,8 +22,10 @@ func NewGin(cli service.ServiceRepositoryClient) *gin.Engine {
 	corsConfig.AllowMethods = []string{"*"}
 	r.Use(cors.New(corsConfig))
 
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	hnd := handlers.NewHandlerSt(cli)
-	r.POST("https://3.75.194.236:9000/auth/register", hnd.Register)
+	r.POST("/auth/register", hnd.Register)
 	r.POST("/auth/verify", hnd.Verify)
 	r.POST("/auth/login", hnd.SignIn)
 
